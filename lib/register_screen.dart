@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager/register_screen.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:task_manager/login_screen.dart';
 
 import 'my_list_view.dart';
 
-class LoginScreen extends StatelessWidget {
+class RegisterScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -20,14 +21,14 @@ class LoginScreen extends StatelessWidget {
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
-                hintText: 'Email',
+                hintText: 'Enter Email',
               ),
             ),
             TextFormField(
               controller: passwordController,
               obscureText: true,
               decoration: const InputDecoration(
-                hintText: 'Password',
+                hintText: 'Enter Password',
               ),
             ),
             ElevatedButton(
@@ -35,34 +36,54 @@ class LoginScreen extends StatelessWidget {
                 try {
                   final String email = emailController.text.trim();
                   final String password = passwordController.text.trim();
-                  UserCredential userCredential =
-                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                     email: email,
                     password: password,
                   );
-                  // Navigate to the home screen after successful sign-in
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MyListView(),
+                      builder: (context) => LoginScreen(),
                     ),
                   );
+                  // Get the newly created user's ID
+                  String userId = userCredential.user!.uid;
+
+                  // Get a Firebase Realtime Database reference to the user's data
+                  DatabaseReference userRef = FirebaseDatabase.instance.reference().child('users/$userId');
+
+                  // Store the user's data in the database
+                  await userRef.set({
+                    'email': email,
+                    'password': password,
+                    // Add any other user data you want to store here
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('User registered successfully')));
+
+
+                  // Registration successful, navigate to the home screen
+                  // or display a success message to the user
+
                 } on FirebaseAuthException catch (e) {
-                  if (e.code == 'user-not-found') {
+                  if (e.code == 'weak-password') {
+                    // Handle weak password error
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('User not found')));
-                  } else if (e.code == 'wrong-password') {
+                        content: Text('The password provided is too weak')));
+                  } else if (e.code == 'email-already-in-use') {
+                    // Handle email already in use error
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content:
-                        Text('Incorrect password')));
+                        content: Text('An account with this email already exists')));
+                  } else {
+                    // Handle other errors
                   }
                 } catch (e) {
-                  print(e);
+                  // Handle other errors
                 }
               },
-              child: const Text('Log in'),
+              child: const Text('Register'),
             ),
-            // SizedBox(height: 20),
             TextButton(
               onPressed: () {
                 // Navigate to RegistrationScreen
@@ -71,7 +92,7 @@ class LoginScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => RegisterScreen()),
                 );
               },
-              child: Text("Don't have an account? Register"),
+              child: Text("Already have an account? Login"),
             ),
           ],
         ),
