@@ -1,16 +1,18 @@
-# task_manager
+# Task Manager
 
-A new Flutter project.
+This is a task manager application built with Flutter that allows users to register, login, and add tasks. The application provides an easy-to-use interface for users to manage their tasks efficiently.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+- User registration and login
+- Add tasks with title and description
+- Mark tasks as completed or incomplete
+- Delete tasks
+- Add tasks to favourite list
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Technologies Used
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter framework
+- Dart programming language
+- Firebase for authentication and database storage
