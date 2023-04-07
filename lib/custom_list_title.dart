@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CustomListTile extends StatefulWidget {
   final String title;
   final String description;
+  final DateTime date;
   bool? isChecked;
-  // final Function(bool) onCheckboxChanged;
+
+  final Function(bool) onCheckboxChanged;
   final Function() onFavourite;
   final Function() onDelete;
 
   CustomListTile({
     required this.title,
     required this.description,
+    required this.date,
     required this.isChecked,
-    // required this.onCheckboxChanged,
+    required this.onCheckboxChanged,
     required this.onFavourite,
     required this.onDelete,
   });
@@ -133,6 +137,22 @@ class _CustomListTileState extends State<CustomListTile>
                         opacity: _animation.value,
                         child: Text(
                           widget.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(width: 8),
+                  AnimatedBuilder(
+                    animation: _animation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _animation.value,
+                        child: Text(
+                          DateFormat('yyyy-MM-dd HH:mm').format(widget.date),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey,

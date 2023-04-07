@@ -20,7 +20,6 @@ class _MyListViewState extends State<MyListView> {
 
   @override
   void initState() {
-    // TODO: implement initState
     _tasksFuture = getTasks(auth.currentUser!.uid);
     super.initState();
   }
@@ -72,10 +71,10 @@ class _MyListViewState extends State<MyListView> {
                   itemBuilder: (BuildContext context, int index) {
                     return CustomListTile(
                       title: tasks[index].title,
-                      isChecked: false,
-                      // isChecked: tasks[index].isChecked,
                       description: tasks[index].description!,
-                      // onCheckboxChanged: (bool) {},
+                      isChecked: tasks[index].isChecked,
+                      date: tasks[index].date!,
+                      onCheckboxChanged: (bool) {},
                       onFavourite: () {},
                       onDelete: () async {
                         await db
@@ -113,6 +112,7 @@ class _MyListViewState extends State<MyListView> {
             builder: (BuildContext context) {
               final titleController = TextEditingController();
               final descriptionController = TextEditingController();
+              final dateController = TextEditingController();
               return AlertDialog(
                 title: const Text('Add task'),
                 content: Column(
@@ -121,12 +121,24 @@ class _MyListViewState extends State<MyListView> {
                     TextFormField(
                       controller: titleController,
                       decoration:
-                          const InputDecoration(hintText: 'Enter task title'),
+                      const InputDecoration(hintText: 'Enter task title'),
                     ),
                     TextFormField(
                       controller: descriptionController,
                       decoration: const InputDecoration(
                           hintText: 'Enter task description'),
+                    ),
+                    TextFormField(
+                      controller: dateController,
+                      decoration: const InputDecoration(
+                          hintText: 'Enter task date and time (YYYY-MM-DD HH:mm)'),
+                      keyboardType: TextInputType.datetime,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a date and time';
+                        }
+                        return null;
+                      },
                     ),
                   ],
                 ),
@@ -143,15 +155,36 @@ class _MyListViewState extends State<MyListView> {
                       Task task = Task(
                         title: titleController.text,
                         description: descriptionController.text,
+                        date: DateTime.parse(dateController.text),
                         userId: auth.currentUser!.uid,
                       );
                       DocumentReference ref =
-                          await db.collection('tasks').add(task.toMap());
+                      await db.collection('tasks').add(task.toMap());
                       task.id = ref.id;
 
                       setState(() {
                         _tasksFuture = getTasks(auth.currentUser!.uid);
                       });
+
+                      // Add a notification
+                      // if (DateTime.now().isBefore(task.date!)) {
+                      //   await flutterLocalNotificationsPlugin.zonedSchedule(
+                      //     0,
+                      //     'Reminder: ${task.title}',
+                      //     task.description,
+                      //     tz.TZDateTime.from(task.date!, tz.local),
+                      //     const NotificationDetails(
+                      //       android: AndroidNotificationDetails(
+                      //           'your channel id', 'your channel name',
+                      //           importance: Importance.high,
+                      //           priority: Priority.high),
+                      //     ),
+                      //     androidAllowWhileIdle: true,
+                      //     uiLocalNotificationDateInterpretation:
+                      //     UILocalNotificationDateInterpretation.absoluteTime,
+                      //   );
+                      // }
+                      //
                       Navigator.of(context).pop();
                     },
                   ),
