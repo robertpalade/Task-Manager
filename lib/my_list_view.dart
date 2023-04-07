@@ -73,7 +73,8 @@ class _MyListViewState extends State<MyListView> {
                     return CustomListTile(
                       title: tasks[index].title,
                       isChecked: false,
-                      description: "bla bla",
+                      // isChecked: tasks[index].isChecked,
+                      description: tasks[index].description!,
                       // onCheckboxChanged: (bool) {},
                       onFavourite: () {},
                       onDelete: () async {
@@ -110,13 +111,24 @@ class _MyListViewState extends State<MyListView> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              final textController = TextEditingController();
+              final titleController = TextEditingController();
+              final descriptionController = TextEditingController();
               return AlertDialog(
                 title: const Text('Add task'),
-                content: TextFormField(
-                  controller: textController,
-                  decoration:
-                      const InputDecoration(hintText: 'Enter text here'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: titleController,
+                      decoration:
+                          const InputDecoration(hintText: 'Enter task title'),
+                    ),
+                    TextFormField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                          hintText: 'Enter task description'),
+                    ),
+                  ],
                 ),
                 actions: <Widget>[
                   ElevatedButton(
@@ -129,7 +141,8 @@ class _MyListViewState extends State<MyListView> {
                     child: const Text('OK'),
                     onPressed: () async {
                       Task task = Task(
-                        title: textController.text,
+                        title: titleController.text,
+                        description: descriptionController.text,
                         userId: auth.currentUser!.uid,
                       );
                       DocumentReference ref =

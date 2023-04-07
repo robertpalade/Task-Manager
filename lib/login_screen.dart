@@ -11,12 +11,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
-
   final TextEditingController passwordController = TextEditingController();
 
   @override
   void initState() {
-    // TODO: implement initState
     emailController.text = "robert@robert.com";
     passwordController.text = "111111";
 
@@ -35,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
-                hintText: 'Username/Email',
+                hintText: 'Email',
                 prefixIcon: Icon(Icons.account_circle),
               ),
             ),
@@ -54,12 +52,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 try {
                   final String email = emailController.text.trim();
                   final String password = passwordController.text.trim();
+                  //TODO
+                  //Refactor
                   UserCredential userCredential =
                       await FirebaseAuth.instance.signInWithEmailAndPassword(
                     email: email,
                     password: password,
                   );
-// Navigate to the dashboard after successful sign-in
+                  // Navigate to the dashboard after successful sign-in
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text('Don\'t have an account? '),
                 TextButton(
                   onPressed: () {
-// Navigate to RegistrationScreen
+                    // Navigate to RegistrationScreen
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => RegisterScreen()),

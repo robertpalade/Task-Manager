@@ -32,23 +32,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        // title: Text('Welcome, ${user.displayName}'),
-        title: const Text('Welcome'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            FirebaseAuth.instance.signOut();
-          },
-          child: const Text('Sign Out'),
-        ),
-      ),
-    );
-  }
-}
