@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:task_manager/register_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'custom_list_title.dart';
 import 'firebase_options.dart';
@@ -27,15 +28,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.amber,
       ),
       debugShowCheckedModeBanner: false,
-      // home: const MyListView(),
       home: LoginScreen(),
-      // home: RegisterScreen(),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
