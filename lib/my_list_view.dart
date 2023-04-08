@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager/main.dart';
+import 'package:intl/intl.dart';
 import 'package:task_manager/task.dart';
 
 import 'constants.dart';
@@ -112,7 +112,8 @@ class _MyListViewState extends State<MyListView> {
             builder: (BuildContext context) {
               final titleController = TextEditingController();
               final descriptionController = TextEditingController();
-              final dateController = TextEditingController();
+              // final dateController = TextEditingController();
+              DateTime _selectedDate = DateTime.now(); // declare _selectedDate here
               return AlertDialog(
                 title: const Text('Add task'),
                 content: Column(
@@ -128,16 +129,36 @@ class _MyListViewState extends State<MyListView> {
                       decoration: const InputDecoration(
                           hintText: 'Enter task description'),
                     ),
-                    TextFormField(
-                      controller: dateController,
-                      decoration: const InputDecoration(
-                          hintText: 'Enter task date and time (YYYY-MM-DD HH:mm)'),
-                      keyboardType: TextInputType.datetime,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a date and time';
+                    ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: const Text('Pick a date'),
+                      subtitle: Text(
+                        '${DateFormat.yMd().add_jm().format(_selectedDate)}',
+                      ),
+                      onTap: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(Duration(days: 365)),
+                        );
+                        if (picked != null) {
+                          TimeOfDay? time = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(_selectedDate),
+                          );
+                          if (time != null) {
+                            setState(() {
+                              _selectedDate = DateTime(
+                                picked.year,
+                                picked.month,
+                                picked.day,
+                                time.hour,
+                                time.minute,
+                              );
+                            });
+                          }
                         }
-                        return null;
                       },
                     ),
                   ],
@@ -155,7 +176,7 @@ class _MyListViewState extends State<MyListView> {
                       Task task = Task(
                         title: titleController.text,
                         description: descriptionController.text,
-                        date: DateTime.parse(dateController.text),
+                        date: _selectedDate,
                         userId: auth.currentUser!.uid,
                       );
                       DocumentReference ref =
