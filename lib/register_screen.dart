@@ -1,11 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:task_manager/login_screen.dart';
 
 import 'constants.dart';
-import 'my_list_view.dart';
 
 class RegisterScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -127,12 +124,6 @@ class RegisterScreen extends StatelessWidget {
                     }
                   }
                 },
-                // style: ElevatedButton.styleFrom(
-                //   padding: const EdgeInsets.symmetric(vertical: 15),
-                //   shape: RoundedRectangleBorder(
-                //     borderRadius: BorderRadius.circular(10),
-                //   ),
-                // ),
                 child: const Text('Register'),
               ),
               const SizedBox(height: 16),

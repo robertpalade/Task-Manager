@@ -14,14 +14,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // @override
-  // void initState() {
-  //   // emailController.text = "robert@robert.com";
-  //   // passwordController.text = "111111";
-  //
-  //   super.initState();
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

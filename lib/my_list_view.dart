@@ -1,19 +1,14 @@
-import 'dart:html' as html;
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:task_manager/task.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:task_manager/weather_widget.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:weather/weather.dart';
 
 import 'add_task_button.dart';
 import 'constants.dart';
-import 'custom_list_title.dart';
 import 'display_task_widget.dart';
 import 'login_screen.dart';
 
@@ -82,6 +77,9 @@ class _MyListViewState extends State<MyListView> {
 
   @override
   Widget build(BuildContext context) {
+
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user != null ? user.displayName ?? user.email : '';
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -89,11 +87,23 @@ class _MyListViewState extends State<MyListView> {
             pinned: true,
             expandedHeight: 200.0,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text('Task Manager'),
-              background: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: WeatherWidget(),
+              background: Stack(
+                children: [
+                  WeatherWidget(),
+                  // Positioned(
+                  //   left: 16.0,
+                  //   bottom: 16.0,
+                  //   child: Text(
+                  //     'Welcome, $displayName',
+                  //     style: TextStyle(
+                  //       fontSize: 16.0,
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               ),
+              centerTitle: true,
+              title: Text('Task Manager'),
             ),
             actions: [
               IconButton(
@@ -105,7 +115,10 @@ class _MyListViewState extends State<MyListView> {
                     ),
                   );
                 },
-                icon: Icon(Icons.exit_to_app),
+                icon: Tooltip(
+                  message: 'Logout',
+                  child: Icon(Icons.exit_to_app),
+                ),
               ),
             ],
           ),

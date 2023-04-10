@@ -63,7 +63,6 @@ class _CustomListTileState extends State<CustomListTile>
     return GestureDetector(
       onHorizontalDragEnd: _onHorizontalDrag,
       onTap: () {
-
         _animationController.forward(from: 0);
       },
       child: Dismissible(

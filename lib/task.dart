@@ -22,7 +22,6 @@ class Task {
         description = map['description'],
         isChecked = map['isChecked'],
         date = DateTime.parse(map['date']);
-        // priority = map['priority'];
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,7 +30,6 @@ class Task {
       'description': description,
       'isChecked': isChecked,
       'date': date?.toIso8601String(),
-      // 'priority': priority,
     };
   }
 }

@@ -1,22 +1,15 @@
 import 'dart:html' as html;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:task_manager/task.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:task_manager/weather_widget.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:weather/weather.dart';
 
 import 'constants.dart';
-import 'custom_list_title.dart';
-import 'login_screen.dart';
 
 class AddTaskButton extends StatefulWidget {
   final Function() callback;
+
   const AddTaskButton({Key? key, required this.callback}) : super(key: key);
 
   @override
@@ -25,6 +18,7 @@ class AddTaskButton extends StatefulWidget {
 
 class _AddTaskButtonState extends State<AddTaskButton> {
   final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
@@ -36,7 +30,7 @@ class _AddTaskButtonState extends State<AddTaskButton> {
             final titleController = TextEditingController();
             final descriptionController = TextEditingController();
             DateTime _selectedDate =
-            DateTime.now(); // declare _selectedDate here
+                DateTime.now();
             return AlertDialog(
               title: const Text('Add task'),
               content: Form(
@@ -47,7 +41,7 @@ class _AddTaskButtonState extends State<AddTaskButton> {
                     TextFormField(
                       controller: titleController,
                       decoration:
-                      const InputDecoration(hintText: 'Enter task title'),
+                          const InputDecoration(hintText: 'Enter task title'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a task title';
@@ -118,8 +112,8 @@ class _AddTaskButtonState extends State<AddTaskButton> {
                       userId: auth.currentUser!.uid,
                     );
 
-
-                    DocumentReference ref = await db.collection('tasks').add(task.toMap());
+                    DocumentReference ref =
+                        await db.collection('tasks').add(task.toMap());
                     task.id = ref.id;
                     widget.callback();
 
@@ -139,8 +133,10 @@ class _AddTaskButtonState extends State<AddTaskButton> {
                             html.Notification('Reminder: ${task.title}',
                                 body: task.description,
                                 icon: 'path/to/notification-icon.png');
-                          } else if (html.Notification?.permission != 'denied') {
-                            html.Notification.requestPermission().then((permission) {
+                          } else if (html.Notification?.permission !=
+                              'denied') {
+                            html.Notification.requestPermission()
+                                .then((permission) {
                               if (permission == 'granted') {
                                 html.Notification('Reminder: ${task.title}',
                                     body: task.description,
@@ -151,13 +147,11 @@ class _AddTaskButtonState extends State<AddTaskButton> {
                         }
                       }
                     }
-
                     Navigator.of(context).pop();
                   },
                 ),
               ],
             );
-
           },
         );
       },
