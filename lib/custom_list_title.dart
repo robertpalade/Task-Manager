@@ -63,9 +63,7 @@ class _CustomListTileState extends State<CustomListTile>
     return GestureDetector(
       onHorizontalDragEnd: _onHorizontalDrag,
       onTap: () {
-        setState(() {
-          widget.isChecked = !widget.isChecked!;
-        });
+
         _animationController.forward(from: 0);
       },
       child: Dismissible(
@@ -113,8 +111,9 @@ class _CustomListTileState extends State<CustomListTile>
               value: widget.isChecked,
               onChanged: (bool? value) {
                 setState(() {
-                  widget.isChecked = value ?? false;
+                  widget.isChecked = !widget.isChecked!;
                 });
+                widget.onCheckboxChanged(widget.isChecked!);
               },
             ),
             SizedBox(width: 8),

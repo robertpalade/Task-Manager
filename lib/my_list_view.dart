@@ -1,11 +1,20 @@
+import 'dart:html' as html;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:task_manager/task.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:task_manager/weather_widget.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:weather/weather.dart';
 
+import 'add_task_button.dart';
 import 'constants.dart';
 import 'custom_list_title.dart';
+import 'display_task_widget.dart';
 import 'login_screen.dart';
 
 class MyListView extends StatefulWidget {
@@ -17,11 +26,35 @@ class MyListView extends StatefulWidget {
 
 class _MyListViewState extends State<MyListView> {
   late Future<List<Task>> _tasksFuture;
+  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  late Future<Weather> _weather;
+
+  // final wf = WeatherFactory('AdgPZDDH8ogGBYkJMcu3D0JMHIkWAQB6');
+  // final Weather? currentWeather = wf.currentWeatherByCityName('Bucharest') as Weather?;
 
   @override
   void initState() {
     _tasksFuture = getTasks(auth.currentUser!.uid);
     super.initState();
+    _weather = _getWeather();
+    // Handle incoming notifications
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification notification = message.notification!;
+      AndroidNotification? android = message.notification?.android;
+    });
+    // Get the current notification settings
+    _firebaseMessaging.requestPermission();
+  }
+
+  Future<Weather> _getWeather() async {
+    WeatherFactory wf = WeatherFactory(
+      "de92591a98dea437f95642b0fe92bf17",
+      language: Language.ROMANIAN,
+    );
+    Weather weather = await wf.currentWeatherByCityName("Bucharest");
+    return weather;
   }
 
   Future<void> downloadFromDatabase() async {
@@ -50,172 +83,45 @@ class _MyListViewState extends State<MyListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Task Manager'),
-      ),
-      body: Column(
-        children: [
-          FutureBuilder<List<Task>>(
-            future: _tasksFuture,
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                List<Task> tasks = snapshot.data!;
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: tasks.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return CustomListTile(
-                      title: tasks[index].title,
-                      description: tasks[index].description!,
-                      isChecked: tasks[index].isChecked,
-                      date: tasks[index].date!,
-                      onCheckboxChanged: (bool) {},
-                      onFavourite: () {},
-                      onDelete: () async {
-                        await db
-                            .collection("tasks")
-                            .doc(tasks[index].id)
-                            .delete();
-                        setState(() {
-                          tasks.removeAt(index);
-                        });
-                      },
-                    );
-                  },
-                );
-              }
-            },
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 200.0,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text('Task Manager'),
+              background: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: WeatherWidget(),
+              ),
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => LoginScreen(),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.exit_to_app),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => LoginScreen(),
-                ),
-              );
-            },
-            child: const Text('Sign out'),
+          SliverToBoxAdapter(
+            child: DisplayTaskWidget(tasksFuture: _tasksFuture),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Add task',
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              final titleController = TextEditingController();
-              final descriptionController = TextEditingController();
-              // final dateController = TextEditingController();
-              DateTime _selectedDate = DateTime.now(); // declare _selectedDate here
-              return AlertDialog(
-                title: const Text('Add task'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: titleController,
-                      decoration:
-                      const InputDecoration(hintText: 'Enter task title'),
-                    ),
-                    TextFormField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                          hintText: 'Enter task description'),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.calendar_today),
-                      title: const Text('Pick a date'),
-                      subtitle: Text(
-                        '${DateFormat.yMd().add_jm().format(_selectedDate)}',
-                      ),
-                      onTap: () async {
-                        DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: _selectedDate,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(Duration(days: 365)),
-                        );
-                        if (picked != null) {
-                          TimeOfDay? time = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.fromDateTime(_selectedDate),
-                          );
-                          if (time != null) {
-                            setState(() {
-                              _selectedDate = DateTime(
-                                picked.year,
-                                picked.month,
-                                picked.day,
-                                time.hour,
-                                time.minute,
-                              );
-                            });
-                          }
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  ElevatedButton(
-                    child: const Text('Cancel'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  ElevatedButton(
-                    child: const Text('OK'),
-                    onPressed: () async {
-                      Task task = Task(
-                        title: titleController.text,
-                        description: descriptionController.text,
-                        date: _selectedDate,
-                        userId: auth.currentUser!.uid,
-                      );
-                      DocumentReference ref =
-                      await db.collection('tasks').add(task.toMap());
-                      task.id = ref.id;
-
-                      setState(() {
-                        _tasksFuture = getTasks(auth.currentUser!.uid);
-                      });
-
-                      // Add a notification
-                      // if (DateTime.now().isBefore(task.date!)) {
-                      //   await flutterLocalNotificationsPlugin.zonedSchedule(
-                      //     0,
-                      //     'Reminder: ${task.title}',
-                      //     task.description,
-                      //     tz.TZDateTime.from(task.date!, tz.local),
-                      //     const NotificationDetails(
-                      //       android: AndroidNotificationDetails(
-                      //           'your channel id', 'your channel name',
-                      //           importance: Importance.high,
-                      //           priority: Priority.high),
-                      //     ),
-                      //     androidAllowWhileIdle: true,
-                      //     uiLocalNotificationDateInterpretation:
-                      //     UILocalNotificationDateInterpretation.absoluteTime,
-                      //   );
-                      // }
-                      //
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
+      floatingActionButton: AddTaskButton(
+        callback: () {
+          setState(() {
+            _tasksFuture = getTasks(auth.currentUser!.uid);
+          });
         },
-        child: const Icon(Icons.add),
       ),
     );
   }
+
 }
