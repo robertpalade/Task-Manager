@@ -18,13 +18,13 @@ class RegisterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 50),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 50),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 16),
               const Text(
                 'Create Account',
                 style: TextStyle(
@@ -32,61 +32,43 @@ class RegisterScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: const TextStyle(color: Colors.grey),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
+                  hintText: 'Email',
+                  prefixIcon: const Icon(Icons.account_circle),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: const TextStyle(color: Colors.grey),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
+                  hintText: 'Password',
+                  prefixIcon: const Icon(Icons.lock),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  labelStyle: const TextStyle(color: Colors.grey),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
+                  hintText: 'Confirm Password',
+                  prefixIcon: const Icon(Icons.lock),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a password';
                   }
                   if (value != passwordController.text) {
-                    return 'Password do not match';
+                    return 'Password does not match';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -99,15 +81,11 @@ class RegisterScreen extends StatelessWidget {
                         email: email,
                         password: password,
                       );
-
-                      // Get the newly created user's ID
                       String userId = userCredential.user!.uid;
-
-                      // Use the Firestore collection reference to add the user's data to the "users" collection
-                      await db.collection('users').doc(userId).set({
-                        'email': email
-                        // 'fullName': fullName, // Add user's full name
-                      });
+                      await db
+                          .collection('users')
+                          .doc(userId)
+                          .set({'email': email});
 
                       Navigator.pushReplacement(
                         context,
@@ -118,18 +96,13 @@ class RegisterScreen extends StatelessWidget {
 
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text('User registered successfully!')));
-
-                      // Registration successful, navigate to the home screen
-                      // or display a success message to the user
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'weak-password') {
-                        // Handle weak password error
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content:
                                     Text('The password provided is too weak')));
                       } else if (e.code == 'email-already-in-use') {
-                        // Handle email already in use error
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content: Text(
                                 'An account with this email already exists')));
@@ -141,23 +114,29 @@ class RegisterScreen extends StatelessWidget {
                     }
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+                // style: ElevatedButton.styleFrom(
+                //   padding: const EdgeInsets.symmetric(vertical: 15),
+                //   shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(10),
+                //   ),
+                // ),
                 child: const Text('Register'),
               ),
-              TextButton(
-                onPressed: () {
-                  // Navigate to RegistrationScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
-                  );
-                },
-                child: Text("Already have an account? Login"),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Already have an account? '),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    },
+                    child: const Text(" Login"),
+                  ),
+                ],
               ),
             ],
           ),
