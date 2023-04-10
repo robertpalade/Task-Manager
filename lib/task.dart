@@ -10,7 +10,7 @@ class Task {
     this.id,
     required this.title,
     required this.userId,
-    this.description,
+    this.description = '',
     this.isChecked = false,
     this.date,
   });

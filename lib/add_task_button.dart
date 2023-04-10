@@ -24,6 +24,7 @@ class AddTaskButton extends StatefulWidget {
 }
 
 class _AddTaskButtonState extends State<AddTaskButton> {
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
@@ -34,57 +35,65 @@ class _AddTaskButtonState extends State<AddTaskButton> {
           builder: (BuildContext context) {
             final titleController = TextEditingController();
             final descriptionController = TextEditingController();
-            // final dateController = TextEditingController();
             DateTime _selectedDate =
             DateTime.now(); // declare _selectedDate here
             return AlertDialog(
               title: const Text('Add task'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: titleController,
-                    decoration:
-                    const InputDecoration(hintText: 'Enter task title'),
-                  ),
-                  TextFormField(
-                    controller: descriptionController,
-                    decoration: const InputDecoration(
-                        hintText: 'Enter task description'),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Pick a date'),
-                    subtitle: Text(
-                      '${DateFormat.yMd().add_jm().format(_selectedDate)}',
-                    ),
-                    onTap: () async {
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: _selectedDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(Duration(days: 365 * 5)),
-                      );
-                      if (picked != null) {
-                        TimeOfDay? time = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.fromDateTime(_selectedDate),
-                        );
-                        if (time != null) {
-                          setState(() {
-                            _selectedDate = DateTime(
-                              picked.year,
-                              picked.month,
-                              picked.day,
-                              time.hour,
-                              time.minute,
-                            );
-                          });
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: titleController,
+                      decoration:
+                      const InputDecoration(hintText: 'Enter task title'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a task title';
                         }
-                      }
-                    },
-                  ),
-                ],
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                          hintText: 'Enter task description'),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: const Text('Pick a date'),
+                      subtitle: Text(
+                        '${DateFormat.yMd().add_jm().format(_selectedDate)}',
+                      ),
+                      onTap: () async {
+                        DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(Duration(days: 365 * 5)),
+                        );
+                        if (picked != null) {
+                          TimeOfDay? time = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(_selectedDate),
+                          );
+                          if (time != null) {
+                            setState(() {
+                              _selectedDate = DateTime(
+                                picked.year,
+                                picked.month,
+                                picked.day,
+                                time.hour,
+                                time.minute,
+                              );
+                            });
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
               actions: <Widget>[
                 ElevatedButton(
@@ -96,16 +105,23 @@ class _AddTaskButtonState extends State<AddTaskButton> {
                 ElevatedButton(
                   child: const Text('OK'),
                   onPressed: () async {
+                    if (!_formKey.currentState!.validate()) {
+                      return;
+                    }
+
                     Task task = Task(
                       title: titleController.text,
-                      description: descriptionController.text,
+                      description: descriptionController.text.isNotEmpty
+                          ? descriptionController.text
+                          : '',
                       date: _selectedDate,
                       userId: auth.currentUser!.uid,
                     );
-                    DocumentReference ref =
-                    await db.collection('tasks').add(task.toMap());
+
+
+                    DocumentReference ref = await db.collection('tasks').add(task.toMap());
                     task.id = ref.id;
-widget.callback();
+                    widget.callback();
 
                     // Add a notification
                     if (task.date != null &&
@@ -123,10 +139,8 @@ widget.callback();
                             html.Notification('Reminder: ${task.title}',
                                 body: task.description,
                                 icon: 'path/to/notification-icon.png');
-                          } else if (html.Notification?.permission !=
-                              'denied') {
-                            html.Notification.requestPermission()
-                                .then((permission) {
+                          } else if (html.Notification?.permission != 'denied') {
+                            html.Notification.requestPermission().then((permission) {
                               if (permission == 'granted') {
                                 html.Notification('Reminder: ${task.title}',
                                     body: task.description,
@@ -143,6 +157,7 @@ widget.callback();
                 ),
               ],
             );
+
           },
         );
       },
