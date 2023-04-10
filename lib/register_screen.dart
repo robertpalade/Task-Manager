@@ -40,6 +40,12 @@ class RegisterScreen extends StatelessWidget {
                   hintText: 'Email',
                   prefixIcon: const Icon(Icons.account_circle),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -49,6 +55,12 @@ class RegisterScreen extends StatelessWidget {
                   hintText: 'Password',
                   prefixIcon: const Icon(Icons.lock),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -60,7 +72,7 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a password';
+                    return 'Please retype your password';
                   }
                   if (value != passwordController.text) {
                     return 'Password does not match';
@@ -87,15 +99,15 @@ class RegisterScreen extends StatelessWidget {
                           .doc(userId)
                           .set({'email': email});
 
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('User registered successfully!')));
+
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => LoginScreen(),
                         ),
                       );
-
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                          content: Text('User registered successfully!')));
                     } on FirebaseAuthException catch (e) {
                       if (e.code == 'weak-password') {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -111,6 +123,7 @@ class RegisterScreen extends StatelessWidget {
                       }
                     } catch (e) {
                       // Handle other errors
+                      print(e);
                     }
                   }
                 },
